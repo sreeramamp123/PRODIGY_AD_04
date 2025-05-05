@@ -8,12 +8,20 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   bool gameOver = false;
 
+  int scoreX = 0;
+  int scoreO = 0;
+
   void resetGame() {
     setState(() {
       board = List.filled(9, '');
       xTurn = true;
       gameOver = false;
     });
+  }
+
+  String get currentPlayerText {
+    if (gameOver) return '';
+    return xTurn ? "Player X's Turn" : "Player O's Turn";
   }
 
   final List<List<int>> winPatterns = [
@@ -47,18 +55,31 @@ class _HomeState extends State<Home> {
 
       String? winner = checkWinner();
       if (winner != null) {
+        setState(() {
+          if (winner == 'X') {
+            scoreX += 1;
+          } else {
+            scoreO += 1;
+          }
+        });
+
         showDialog(
           context: context,
           builder:
               (_) => AlertDialog(
-                title: Text('$winner wins!'),
+                backgroundColor: Color.fromARGB(255, 42, 42, 42),
+                title: Text(
+                  '$winner wins!',
+                  style: TextStyle(color: Colors.white),
+                ),
                 actions: [
-                  TextButton(
+                  FloatingActionButton.extended(
                     onPressed: () {
                       resetGame();
                       Navigator.of(context).pop();
                     },
-                    child: Text('Play Again'),
+                    label: Text("Play Again"),
+                    icon: Icon(Icons.repeat),
                   ),
                 ],
               ),
@@ -70,14 +91,15 @@ class _HomeState extends State<Home> {
           context: context,
           builder:
               (_) => AlertDialog(
-                title: Text('Draw!'),
+                title: Text('Draw!', style: TextStyle(color: Colors.white)),
                 actions: [
-                  TextButton(
+                  FloatingActionButton.extended(
                     onPressed: () {
                       resetGame();
                       Navigator.of(context).pop();
                     },
-                    child: Text('Play Again'),
+                    label: Text("Play Again"),
+                    icon: Icon(Icons.repeat),
                   ),
                 ],
               ),
@@ -91,13 +113,60 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text('Tic Tac Toe', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.black,
-      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      'Player X',
+                      style: TextStyle(fontSize: 18, color: Colors.red),
+                    ),
+                    Text(
+                      '$scoreX',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Text(
+                      'Player O',
+                      style: TextStyle(fontSize: 18, color: Colors.green),
+                    ),
+                    Text(
+                      '$scoreO',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              currentPlayerText,
+              style: TextStyle(
+                color: Colors.blueAccent,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(30.0),
             child: GridView.builder(
@@ -132,6 +201,9 @@ class _HomeState extends State<Home> {
               setState(() {
                 board = List.filled(9, '');
                 xTurn = true;
+                scoreO = 0;
+                scoreX = 0;
+                gameOver = false;
               });
             },
             label: Text("Reset"),
