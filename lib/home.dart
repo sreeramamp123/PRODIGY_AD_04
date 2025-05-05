@@ -1,20 +1,89 @@
 import 'package:flutter/material.dart';
 
-class TicTacToe extends StatefulWidget {
+class Home extends StatefulWidget {
   @override
-  _TicTacToeState createState() => _TicTacToeState();
+  _HomeState createState() => _HomeState();
 }
 
-class _TicTacToeState extends State<TicTacToe> {
-  List<String> board = List.filled(9, ''); // 3x3 = 9 cells
-  bool xTurn = true; // X starts first
+class _HomeState extends State<Home> {
+  bool gameOver = false;
+
+  void resetGame() {
+    setState(() {
+      board = List.filled(9, '');
+      xTurn = true;
+      gameOver = false;
+    });
+  }
+
+  final List<List<int>> winPatterns = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+    [0, 4, 8], [2, 4, 6], // diagonals
+  ];
+
+  String? checkWinner() {
+    for (var pattern in winPatterns) {
+      String a = board[pattern[0]];
+      String b = board[pattern[1]];
+      String c = board[pattern[2]];
+
+      if (a != '' && a == b && b == c) {
+        return a; // 'X' or 'O'
+      }
+    }
+    return null; // no winner yet
+  }
+
+  List<String> board = List.filled(9, '');
+  bool xTurn = true;
 
   void handleTap(int index) {
-    if (board[index] == '') {
+    if (board[index] == '' && !gameOver) {
       setState(() {
         board[index] = xTurn ? 'X' : 'O';
         xTurn = !xTurn;
       });
+
+      String? winner = checkWinner();
+      if (winner != null) {
+        showDialog(
+          context: context,
+          builder:
+              (_) => AlertDialog(
+                title: Text('$winner wins!'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      resetGame();
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Play Again'),
+                  ),
+                ],
+              ),
+        );
+        gameOver = true;
+      } else if (!board.contains('')) {
+        // it's a draw
+        showDialog(
+          context: context,
+          builder:
+              (_) => AlertDialog(
+                title: Text('Draw!'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      resetGame();
+                      Navigator.of(context).pop();
+                    },
+                    child: Text('Play Again'),
+                  ),
+                ],
+              ),
+        );
+        gameOver = true;
+      }
     }
   }
 
